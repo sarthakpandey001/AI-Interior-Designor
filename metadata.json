@@ -1,0 +1,7 @@
+{
+  "name": "AI Interior Designer",
+  "description": "An application that uses AI to generate stunning, photo-realistic interior design concepts by seamlessly integrating user-provided furniture into a room image based on a descriptive prompt.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
