@@ -43,17 +43,18 @@ export const PromptDetailsInput: React.FC<PromptDetailsInputProps> = ({
     const coreAudioInputRef = useRef<HTMLInputElement>(null);
     const specificsAudioInputRef = useRef<HTMLInputElement>(null);
 
-    const handleTranscription = async (audioBlob: Blob, mimeType: string) => {
+    const handleTranscription = async (audioBlob: Blob, mimeType: string, target: 'core' | 'specifics') => {
         setError(null);
         // The `transcriptionTarget` state is used to show the "Transcribing..." indicator.
-        // It's set by the calling function (`startRecording` or `handleAudioFileChange`).
+        // It's set here for file uploads, and re-set for recordings.
+        setTranscriptionTarget(target);
         try {
             const base64Audio = await blobToBase64(audioBlob);
             const transcribedText = await transcribeAudio(base64Audio, mimeType);
             
-            if (transcriptionTarget === 'core') {
+            if (target === 'core') {
                 setCoreDescription(currentDesc => currentDesc ? `${currentDesc} ${transcribedText}` : transcribedText);
-            } else if (transcriptionTarget === 'specifics') {
+            } else if (target === 'specifics') {
                 setSpecifics(currentSpecs => currentSpecs ? `${currentSpecs} ${transcribedText}` : transcribedText);
             }
         } catch (e: any) {
@@ -74,7 +75,7 @@ export const PromptDetailsInput: React.FC<PromptDetailsInputProps> = ({
             mediaRecorderRef.current.onstop = () => {
                 const mimeType = mediaRecorderRef.current?.mimeType || 'audio/webm';
                 const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-                handleTranscription(audioBlob, mimeType);
+                handleTranscription(audioBlob, mimeType, target);
                 audioChunksRef.current = [];
                 stream.getTracks().forEach(track => track.stop());
             };
@@ -106,8 +107,7 @@ export const PromptDetailsInput: React.FC<PromptDetailsInputProps> = ({
     const handleAudioFileChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'core' | 'specifics') => {
         const file = e.target.files?.[0];
         if (file) {
-            setTranscriptionTarget(target);
-            handleTranscription(file, file.type);
+            handleTranscription(file, file.type, target);
         }
          if(e.target) e.target.value = '';
     };
